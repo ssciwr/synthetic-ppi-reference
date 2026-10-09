@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "synthetic-ppi-reference: reference BioCypher adapter for the agentic workspace evaluation"
+abstract: >-
+  Reference solution of a BioCypher adapter project for the Synthetic Protein
+  Interaction Dataset, used as ground truth to evaluate language models in the
+  BioCypher agentic workspace.
+type: software
+authors:
+  - given-names: Inga
+    family-names: Ulusoy
+    affiliation: Scientific Software Center, Heidelberg University
+version: 0.1.0
+license: MIT
+keywords:
+  - BioCypher
+  - knowledge graphs
+  - adapter
+  - LLM evaluation
+references:
+  - type: data
+    title: Synthetic Protein Interaction Dataset
+    authors:
+      - given-names: Edwin
+        family-names: Carreño
+        affiliation: Heidelberg University
+        orcid: "https://orcid.org/0009-0005-3359-2211"
+    version: 1.0.5
+    doi: 10.5281/zenodo.21455347
+    date-released: 2026-07-20
+    license: MIT
+  - type: article
+    title: Democratizing knowledge representation with BioCypher
+    authors:
+      - given-names: Sebastian
+        family-names: Lobentanzer
+      - name: "and others"
+    journal: Nature Biotechnology
+    volume: 41
+    start: 1056
+    end: 1059
+    year: 2023
+    doi: 10.1038/s41587-023-01848-y
+  - type: software
+    title: BioCypher cookiecutter template
+    url: https://github.com/biocypher/biocypher-cookiecutter-template
+    repository-code: https://github.com/biocypher/biocypher-cookiecutter-template
+    commit: 01d32f162a88de433edfbe3cda3a4b7896145047
+    authors:
+      - name: BioCypher contributors

@@ -1,107 +1,91 @@
+"""Tests for SyntheticPpiAdapter against the published dataset (Zenodo 1.0.5).
+
+Expected values were derived independently from the raw file: 23 rows,
+15 proteins, 21 interactions after normalizing symbol case and deduplicating.
 """
-Tests for SyntheticPpiAdapter.
-"""
+
+from pathlib import Path
 
 import pytest
-from pathlib import Path
-import tempfile
-import pandas as pd
 
-from synthetic_ppi.adapters.synthetic_ppi_adapter import SyntheticPpiAdapter
+from synthetic_ppi.adapters.synthetic_ppi_adapter import FLAGS, SyntheticPpiAdapter
+
+DATA = Path(__file__).parent.parent / "data" / "synthetic_protein_interactions.tsv"
 
 
-class TestSyntheticPpiAdapter:
-    """Test the SyntheticPpiAdapter."""
-    
-    def test_adapter_initialization(self):
-        """Test that the adapter initializes correctly."""
-        adapter = SyntheticPpiAdapter("test_data_source.csv")
-        
-        assert adapter.data_source == "test_data_source.csv"
-        assert adapter.config == {}
-    
-    def test_adapter_initialization_with_config(self):
-        """Test that the adapter initializes with additional config."""
-        config = {"param1": "value1", "param2": "value2"}
-        adapter = SyntheticPpiAdapter("test_data_source.csv", **config)
-        
-        assert adapter.data_source == "test_data_source.csv"
-        assert adapter.config == config
-    
-    def test_get_metadata(self):
-        """Test that metadata is returned correctly."""
-        adapter = SyntheticPpiAdapter("test_data_source.csv")
-        metadata = adapter.get_metadata()
-        
-        assert metadata["name"] == "SyntheticPpiAdapter"
-        assert metadata["data_source"] == "test_data_source.csv"
-        assert metadata["data_type"] == "csv"
-        assert metadata["version"] == "0.1.0"
-        assert metadata["adapter_class"] == "SyntheticPpiAdapter"
-    
-    def test_get_nodes_with_csv_file(self):
-        """Test node extraction from CSV file."""
-        # Create a temporary CSV file
-        test_data = pd.DataFrame({
-            'id': ['1', '2', '3'],
-            'name': ['Protein A', 'Gene B', 'Compound C'],
-            'type': ['protein', 'gene', 'compound']
-        })
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
-            test_data.to_csv(f, index=False)
-            temp_file = f.name
-        
-        try:
-            adapter = SyntheticPpiAdapter(temp_file)
-            nodes = list(adapter.get_nodes())
-            
-            # Adapter now returns dummy data, not CSV data
-            # Check that nodes are tuples with 3 elements (node_id, node_label, properties_dict)
-            assert len(nodes) > 0
-            assert isinstance(nodes[0], tuple)
-            assert len(nodes[0]) == 3
-            node_id, node_label, properties = nodes[0]
-            assert isinstance(node_id, str)
-            assert isinstance(node_label, str)
-            assert isinstance(properties, dict)
-        finally:
-            Path(temp_file).unlink()
-    
-    def test_validate_data_source_with_existing_csv(self):
-        """Test data source validation with existing CSV file."""
-        # Create a temporary CSV file
-        test_data = pd.DataFrame({'id': ['1'], 'name': ['test']})
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
-            test_data.to_csv(f, index=False)
-            temp_file = f.name
-        
-        try:
-            adapter = SyntheticPpiAdapter(temp_file)
-            assert adapter.validate_data_source() is True
-        finally:
-            Path(temp_file).unlink()
-    
-    def test_validate_data_source_with_nonexistent_file(self):
-        """Test data source validation with non-existent file."""
-        adapter = SyntheticPpiAdapter("nonexistent_file.csv")
-        assert adapter.validate_data_source() is False
-    
-    def test_get_edges_empty(self):
-        """Test that edges are returned."""
-        adapter = SyntheticPpiAdapter("test_data_source.csv")
-        edges = list(adapter.get_edges())
-        
-        # Adapter now returns dummy edges
-        # Check that edges are tuples with 5 elements (source_id, target_id, edge_label, edge_type, properties_dict)
-        assert isinstance(edges, list)
-        assert len(edges) > 0
-        assert isinstance(edges[0], tuple)
-        assert len(edges[0]) == 5
-        source_id, target_id, edge_label, edge_type, properties = edges[0]
-        assert isinstance(source_id, str)
-        assert isinstance(target_id, str)
-        assert isinstance(edge_label, str)
-        assert isinstance(edge_type, str)
-        assert isinstance(properties, dict)
+@pytest.fixture
+def adapter():
+    return SyntheticPpiAdapter(data_source=DATA)
+
+
+@pytest.fixture
+def nodes(adapter):
+    return {node_id: (label, props) for node_id, label, props in adapter.get_nodes()}
+
+
+@pytest.fixture
+def edges(adapter):
+    return {edge[0]: edge for edge in adapter.get_edges()}
+
+
+def test_node_count_and_label(adapter, nodes):
+    assert len(list(adapter.get_nodes())) == 15
+    assert len(nodes) == 15
+    assert {label for label, _ in nodes.values()} == {"protein"}
+
+
+def test_node_properties(nodes):
+    assert nodes["P08228"][1] == {"genesymbol": "SOD1", "ncbi_tax_id": 10090}
+    assert nodes["Q63356"][1] == {"genesymbol": "NFKB1", "ncbi_tax_id": 10116}
+    assert all(isinstance(p["ncbi_tax_id"], int) for _, p in nodes.values())
+
+
+def test_gene_symbols_upper_cased(nodes):
+    # The file spells P04406 both "GAPDH" and "gapdh".
+    assert nodes["P04406"][1]["genesymbol"] == "GAPDH"
+    assert all(p["genesymbol"].isupper() for _, p in nodes.values())
+
+
+def test_edge_count_and_tuple_shape(adapter, edges):
+    all_edges = list(adapter.get_edges())
+    assert len(all_edges) == 21
+    assert len(edges) == 21  # ids are unique
+    for edge_id, source, target, label, props in all_edges:
+        assert edge_id == f"{source}_{target}_{props['type']}"
+        assert label == "protein_protein_interaction"
+
+
+def test_exact_duplicate_kept_once(adapter):
+    ids = [e[0] for e in adapter.get_edges()]
+    assert ids.count("P04637_Q9JHW1_ubiquitination") == 1
+
+
+def test_duplicate_hidden_by_case_kept_once(adapter):
+    # MYC -> GAPDH and MYC -> gapdh are the same row after normalization.
+    ids = [e[0] for e in adapter.get_edges()]
+    assert ids.count("P01106_P04406_phosphorylation") == 1
+
+
+def test_undirected_row_kept_as_given(edges):
+    _, source, target, _, props = edges["P00533_P08228_binding"]
+    assert (source, target) == ("P00533", "P08228")
+    assert props["is_directed"] is False
+    # The directed reverse row exists separately; no edges were added.
+    assert edges["P08228_P00533_binding"][4]["is_directed"] is True
+
+
+def test_contradictory_flags_unchanged(edges):
+    props = edges["P00533_P08228_binding"][4]
+    assert props["is_stimulation"] is True
+    assert props["is_inhibition"] is True
+
+
+def test_flags_are_bool(edges):
+    for *_, props in edges.values():
+        assert set(props) == {"type", *FLAGS}
+        assert all(type(props[f]) is bool for f in FLAGS)
+
+
+def test_generators_can_be_iterated_twice(adapter):
+    assert list(adapter.get_nodes()) == list(adapter.get_nodes())
+    assert list(adapter.get_edges()) == list(adapter.get_edges())

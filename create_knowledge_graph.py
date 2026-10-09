@@ -30,8 +30,7 @@ def main():
     )
     
     # Initialize the adapter
-    # TODO: Configure your CSV data source path here
-    data_source = "data/your_data.csv"  # Update this with your actual CSV file path
+    data_source = "data/synthetic_protein_interactions.tsv"
     
     adapter = SyntheticPpiAdapter(
         data_source=data_source,

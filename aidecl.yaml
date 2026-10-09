@@ -1,0 +1,96 @@
+schema_version: "1.0.0"
+
+project:
+  name: synthetic-ppi-reference
+  version: "0.1.0"
+  license: MIT
+  content_type: software
+
+ai_usage:
+  used: true
+  level: extensive
+  summary: >-
+    An AI coding agent (Claude Code) generated this repository on 2026-10-09
+    at the maintainer's request: it ran the BioCypher cookiecutter template
+    with the arguments the BioCypher MCP prescribes, then wrote the reference
+    adapter, schema configuration, tests, dependency and build-path fixes,
+    README, data notice and citation metadata. Expected values were derived
+    by the agent from the published dataset and cross-checked by running
+    BioCypher. Pending human review.
+
+  tools:
+    - name: Claude Code
+      vendor: Anthropic
+      type: agent
+      model: claude-opus-5-5
+      hosting: cloud_vendor
+      period: { start: "2026-10-09", end: "2026-10-09" }
+      purpose: [code generation, test writing, documentation, data analysis]
+    - name: rseng-agent-skills
+      type: standalone
+      version: "0.2.0"
+      skills_consulted: [rseng-ai-declaration, rseng-citation-metadata]
+
+  activities: [code_generation, testing, documentation]
+
+  scope:
+    code_generation: true
+    code_review: false
+    documentation: true
+    testing: true
+    infrastructure: false
+
+  code_proportion:
+    ai_generated_percent: 100
+    ai_assisted_percent: 0
+    human_only_percent: 0
+    method: self_reported
+    estimation_notes: >-
+      Every change on top of the template-generated first commit was written
+      by the agent; the first commit itself is unmodified cookiecutter output.
+
+  generated_content:
+    documentation_percent: 100
+    artifacts:
+      - src/synthetic_ppi/adapters/synthetic_ppi_adapter.py
+      - config/schema_config.yaml
+      - tests/test_synthetic_ppi_adapter.py
+      - tests/test_graph_build.py
+      - README.md
+      - data/README.md
+      - CITATION.cff
+
+  components:
+    - name: reference adapter and schema
+      description: SyntheticPpiAdapter and the Biolink schema configuration
+      ai_involvement: >-
+        Written by the agent from the evaluation specification in
+        biocypher-workspace-eval docs/evaluating_models_workspace.md
+        (data-handling rules defined with the maintainer in the same session);
+        verified against an independently derived ground truth and by a
+        BioCypher 0.17.0 graph build (15 nodes, 21 edges).
+      tools_used: [Claude Code]
+      notes: >-
+        Not yet reviewed by a human. Dataset: Carreño (2026),
+        doi:10.5281/zenodo.21455347. Scaffold: biocypher-cookiecutter-template
+        commit 01d32f1.
+    - name: tests
+      description: adapter tests and end-to-end graph build test
+      ai_involvement: agent-written; replace the template's tests of the dummy implementation
+      tools_used: [Claude Code]
+      notes: Not yet reviewed by a human.
+    - name: documentation and metadata
+      description: README, data/README.md, LICENSE, CITATION.cff, this file
+      ai_involvement: agent-written
+      tools_used: [Claude Code]
+      notes: >-
+        Copyright holders in LICENSE and data/README.md were chosen by the
+        agent (repository: Scientific Software Center; dataset: the Zenodo
+        record's creator) and need confirmation.
+
+declaration:
+  date: "2026-10-09"
+  declared_by: Inga Ulusoy
+  notes: >-
+    2026-10-09 initial declaration, drafted by the agent for the maintainer;
+    human review pending.

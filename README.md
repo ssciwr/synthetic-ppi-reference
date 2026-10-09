@@ -1,137 +1,70 @@
-# synthetic-ppi
+# synthetic-ppi-reference
 
-BioCypher project for the Synthetic Protein Interaction Dataset
+Reference solution for the model evaluation of the BioCypher agentic workspace of [biocypher-components-registry](https://github.com/ssciwr/biocypher-components-registry); the evaluation harness and its design (`docs/evaluating_models_workspace.md`) are in the **biocypher-workspace-eval** repository.
 
-## Overview
+It is the BioCypher adapter project that a model in the workspace is asked to build: a project generated from the [BioCypher cookiecutter template](https://github.com/biocypher/biocypher-cookiecutter-template), completed for the [Synthetic Protein Interaction Dataset](https://doi.org/10.5281/zenodo.21455347). The evaluation uses it to
 
-This BioCypher pipeline processes file data using the synthetic_ppi_adapter to create a knowledge graph.
+- define and validate the grader: this solution must pass every check, and mutants derived from its adapter must each fail the expected check;
+- provide the pristine scaffold for the levels that start from a scaffolded project (the first commit, see below).
 
-## Features
+## Contents
 
-- **Data Source**: file data processing
-- **Adapter**: synthetic_ppi_adapter
-- **Output**: Neo4j knowledge graph
-- **Docker Support**: Containerized deployment
-- **Testing**: Comprehensive test suite
+| Path | What |
+|---|---|
+| `src/synthetic_ppi/adapters/synthetic_ppi_adapter.py` | reference adapter `SyntheticPpiAdapter` |
+| `config/schema_config.yaml` | schema: Biolink `protein` nodes, `pairwise molecular interaction` edges |
+| `tests/` | adapter tests against the dataset, and an end-to-end graph build test |
+| `data/` | the dataset, copied unchanged from Zenodo (see [data/README.md](data/README.md)) |
 
-## Installation
-
-### Prerequisites
-
-- Python 3.13 or higher
-- Neo4j database (local or remote)
-
-### Setup
-
-1. Clone this repository:
-   ```bash
-   git clone <repository-url>
-   cd synthetic-ppi
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -e .
-   ```
-
-   Or using uv:
-   ```bash
-   uv sync
-   ```
-
-3. Configure your data source in `create_knowledge_graph.py`
-
-4. Update the schema configuration in `config/schema_config.yaml` if needed
+Expected result: 15 `Protein` nodes and 21 `PairwiseMolecularInteraction` edges. Data handling: gene symbols upper-cased; rows identical after that kept once (one exact duplicate, one hidden by `GAPDH`/`gapdh`); everything else kept as given (no reverse edges for the undirected row, contradictory flags unchanged, 0/1 flags as `bool`).
 
 ## Usage
 
-### Basic Usage
-
-Run the pipeline to create the knowledge graph:
+Requires Python ≥ 3.13 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-python create_knowledge_graph.py
+uv sync
+uv run pytest                          # adapter tests + graph build
+uv run python create_knowledge_graph.py  # writes biocypher-out/*.parquet
 ```
 
-### Configuration
+The first run downloads the Biolink 3.2.1 ontology.
 
-The pipeline uses two main configuration files:
+## Provenance
 
-- `config/biocypher_config.yaml` - BioCypher settings
-- `config/schema_config.yaml` - Schema mapping configuration
-### Docker Usage
-
-Build and run with Docker:
+The first commit is the unmodified output of
 
 ```bash
-docker-compose up -d
+cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git \
+  --checkout 01d32f162a88de433edfbe3cda3a4b7896145047 --no-input \
+  project_name="synthetic-ppi" project_description="BioCypher project for the Synthetic Protein Interaction Dataset" \
+  package_name="synthetic_ppi" adapter_name="synthetic_ppi_adapter" data_source_type="file" \
+  include_docker="y" include_tests="y" schema_config="y" \
+  author_name="BioCypher User" author_email="user@example.com" version="0.1.0"
 ```
 
-This will:
-1. Build the BioCypher pipeline
-2. Import the data into Neo4j
-3. Start the Neo4j instance
+(the template's post-generation hook runs `git init` and creates that commit). The arguments are the defaults that the BioCypher MCP's `get_cookiecutter_instructions` (server 1.13.1) prescribes. `git diff <first commit>` shows the complete solution. Changes to the scaffold, apart from the adapter, schema and tests:
 
-Access Neo4j at: http://localhost:7474
+| Scaffold defect | Fix |
+|---|---|
+| `pyarrow` missing, so `create_knowledge_graph.py` fails with `ModuleNotFoundError` (BioCypher 0.17 writes Parquet) | added to `pyproject.toml` |
+| `create_knowledge_graph.py` points to `data/your_data.csv` | points to the dataset |
+| example `get_edges()` yields tuples in the wrong order (`source, target, label, type, props`) | BioCypher order `(edge_id, source, target, label, props)` |
+| template tests check the dummy implementation (pass on the empty scaffold, fail on a real adapter) | replaced by tests of the real adapter |
+| `.gitignore` excludes `data/` | un-ignored for the pinned dataset |
 
-Note that you will need to switch the BioCypher mode `offline` to `false` via `biocypher_config.yaml`, and add the `"neo4j>=5.0"` dependency in `pyproject.toml` for this to work.
-## Testing
+The remaining scaffold files (`pyproject.toml` metadata, Docker files, `config/biocypher_config.yaml`) are left as generated so the diff stays minimal.
 
-Run the test suite:
+Verified with Python 3.13.12, BioCypher 0.17.0, pyarrow 26.0.0 (see `uv.lock`).
 
-```bash
-pytest tests/ -v
-```
+## Citation
 
-Run with coverage:
-
-```bash
-pytest tests/ --cov=synthetic_ppi --cov-report=html
-```
-
-## Project Structure
-
-```
-synthetic-ppi/
-├── config/
-│   ├── biocypher_config.yaml
-│   └── schema_config.yaml
-├── src/synthetic_ppi/
-│   └── adapters/
-│       └── synthetic_ppi_adapter.py
-├── create_knowledge_graph.py
-├── docker-compose.yml
-├── Dockerfile
-├── tests/
-│   └── test_synthetic_ppi_adapter.py
-├── pyproject.toml
-└── README.md
-```
-
-## Development
-
-### Code Style
-
-This project uses:
-- **Black** for code formatting
-- **isort** for import sorting
-- **mypy** for type checking
-
-Format code:
-```bash
-black .
-isort .
-```
-
-Type checking:
-```bash
-mypy src/
-```
+See [CITATION.cff](CITATION.cff). If you use the dataset, cite it as given in [data/README.md](data/README.md).
 
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE). The dataset has its own MIT license ([data/README.md](data/README.md)).
 
-## Author
+---
 
-BioCypher User - user@example.com
+*AI involvement in this project is declared in [aidecl.yaml](./aidecl.yaml) following the [AI Declaration Format](https://ai-declaration.org).*
