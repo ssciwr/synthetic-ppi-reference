@@ -1,7 +1,8 @@
 """Reference adapter for the Synthetic Protein Interaction Dataset.
 
 Ground truth for the agentic-workspace model evaluation in
-biocypher-workspace-eval (docs/evaluating_models_workspace.md).
+biocypher-workspace-eval, https://github.com/ssciwr/biocypher-workspace-eval
+(docs/evaluating_models_workspace.md).
 
 Dataset: Carreño, E. (2026). Synthetic Protein Interaction Dataset (1.0.5).
 Zenodo. https://doi.org/10.5281/zenodo.21455347 (MIT license)

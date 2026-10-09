@@ -66,6 +66,7 @@ ai_usage:
       ai_involvement: >-
         Written by the agent from the evaluation specification in
         biocypher-workspace-eval docs/evaluating_models_workspace.md
+        (https://github.com/ssciwr/biocypher-workspace-eval)
         (data-handling rules defined with the maintainer in the same session);
         verified against an independently derived ground truth and by a
         BioCypher 0.17.0 graph build (15 nodes, 21 edges).

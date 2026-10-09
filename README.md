@@ -1,6 +1,6 @@
 # synthetic-ppi-reference
 
-Reference solution for the model evaluation of the BioCypher agentic workspace of [biocypher-components-registry](https://github.com/ssciwr/biocypher-components-registry); the evaluation harness and its design (`docs/evaluating_models_workspace.md`) are in the **biocypher-workspace-eval** repository.
+Reference solution for the model evaluation of the BioCypher agentic workspace of [biocypher-components-registry](https://github.com/ssciwr/biocypher-components-registry); the evaluation harness and its design (`docs/evaluating_models_workspace.md`) are in the [biocypher-workspace-eval](https://github.com/ssciwr/biocypher-workspace-eval) repository.
 
 It is the BioCypher adapter project that a model in the workspace is asked to build: a project generated from the [BioCypher cookiecutter template](https://github.com/biocypher/biocypher-cookiecutter-template), completed for the [Synthetic Protein Interaction Dataset](https://doi.org/10.5281/zenodo.21455347). The evaluation uses it to
 
@@ -52,8 +52,9 @@ cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git \
 | example `get_edges()` yields tuples in the wrong order (`source, target, label, type, props`) | BioCypher order `(edge_id, source, target, label, props)` |
 | template tests check the dummy implementation (pass on the empty scaffold, fail on a real adapter) | replaced by tests of the real adapter |
 | `.gitignore` excludes `data/` | un-ignored for the pinned dataset |
+| `pyproject.toml` URLs point to the placeholder `github.com/biocypher-user/synthetic_ppi` | point to this repository |
 
-The remaining scaffold files (`pyproject.toml` metadata, Docker files, `config/biocypher_config.yaml`) are left as generated so the diff stays minimal.
+The remaining scaffold files (other `pyproject.toml` metadata, Docker files, `config/biocypher_config.yaml`) are left as generated so the diff stays minimal.
 
 Verified with Python 3.13.12, BioCypher 0.17.0, pyarrow 26.0.0 (see `uv.lock`).
 

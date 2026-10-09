@@ -30,8 +30,8 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/biocypher-user/synthetic_ppi"
-"Bug Tracker" = "https://github.com/biocypher-user/synthetic_ppi/issues"
+"Homepage" = "https://github.com/ssciwr/synthetic-ppi-reference"
+"Bug Tracker" = "https://github.com/ssciwr/synthetic-ppi-reference/issues"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

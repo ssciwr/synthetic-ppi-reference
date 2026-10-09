@@ -11,6 +11,7 @@ authors:
     family-names: Ulusoy
     affiliation: Scientific Software Center, Heidelberg University
 version: 0.1.0
+repository-code: https://github.com/ssciwr/synthetic-ppi-reference
 license: MIT
 keywords:
   - BioCypher
