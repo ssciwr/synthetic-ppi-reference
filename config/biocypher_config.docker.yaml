@@ -1,0 +1,11 @@
+# BioCypher overrides for docker-compose, applied on top of biocypher_config.yaml
+
+biocypher:
+  offline: false
+
+neo4j:
+  uri: bolt://neo4j:7687
+  user: neo4j
+  password: password
+  # BioCypher reconnects for each write call, so wiping would delete the nodes before the edges are added
+  wipe: false
