@@ -139,3 +139,14 @@ output/
 data/
 *.db
 *.sqlite
+
+# --- reference repo additions ---
+# The template ignores data/; the reference ships the pinned dataset.
+!data/
+!data/**
+# Agent and session working files, secrets
+.claude/
+.agents/
+.cursor/
+.rseng-agent-skills-*
+*.key

@@ -31,9 +31,7 @@ def main():
     )
     
     # Initialize the adapter
-    # TODO: Configure your data source here. The adapter ignores it
-    # and yields dummy data until get_nodes() and get_edges() are implemented.
-    data_source = "data/your_data"  # Update this with your actual data source
+    data_source = "data/synthetic_protein_interactions.tsv"
     
     adapter = SyntheticPpiAdapter(
         data_source=data_source,
